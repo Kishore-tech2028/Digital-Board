@@ -1,16 +1,127 @@
 import React, { useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import { Save, X } from 'lucide-react';
+import styled from 'styled-components'; // 1. Import
+import theme from '../theme'; // 2. Import
 
-const theme = {
-    colors: {
-        primary: "#0f172a",
-        secondary: "#3b82f6",
-        white: "#ffffff",
-        border: "#e2e8f0",
-        textMain: "#334155"
+// 3. REMOVE local theme object
+
+// 4. DEFINE STYLED COMPONENTS
+const PageHeader = styled.div`
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+`;
+
+const PageTitle = styled.h1`
+    font-size: 1.8rem;
+    color: ${theme.colors.primary};
+    font-weight: 700;
+`;
+
+const FormCard = styled.div`
+    background-color: ${theme.colors.white};
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+`;
+
+const FormGrid = styled.div`
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
     }
-};
+`;
+
+const InputGroup = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: ${props => props.mb || 0};
+`;
+
+const Label = styled.label`
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: ${theme.colors.primary};
+`;
+
+const BaseInputStyles = `
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid ${theme.colors.border};
+    font-size: 1rem;
+    font-family: inherit;
+    color: ${theme.colors.textMain};
+    background-color: ${theme.colors.white};
+
+    &:focus {
+        border-color: ${theme.colors.secondary};
+        outline: none;
+    }
+`;
+
+const Input = styled.input`
+    ${BaseInputStyles}
+    font-size: ${props => props.fontSize || '1rem'};
+`;
+
+const Select = styled.select`
+    ${BaseInputStyles}
+`;
+
+const Textarea = styled.textarea`
+    ${BaseInputStyles}
+    resize: vertical;
+`;
+
+const CheckboxGroup = styled.label`
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid ${theme.colors.border};
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 2rem;
+`;
+
+const CheckboxInput = styled.input`
+    width: 18px;
+    height: 18px;
+    accent-color: ${theme.colors.secondary};
+`;
+
+const Button = styled.button`
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background-color: ${props => props.primary ? theme.colors.secondary : 'transparent'};
+    color: ${props => props.primary ? theme.colors.white : theme.colors.textLight};
+    border: 1px solid ${props => props.primary ? 'transparent' : theme.colors.border};
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+        opacity: 0.9;
+    }
+`;
+
+const ButtonGroup = styled.div`
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+`;
+
 
 const CreateNotice = () => {
     const [formData, setFormData] = useState({
@@ -30,117 +141,94 @@ const CreateNotice = () => {
         e.preventDefault();
         console.log("New Notice Data:", formData);
         alert("Notice 'created'! (Need backend to actually save it)");
-        // Reset form after 'success'
         setFormData({ title: '', category: 'General', content: '', isPinned: false, expiryDate: '' });
     };
 
-    // --- STYLES (keeping it simple for brevity, similar to standard CSS classes) ---
-    const pageHeaderStyle = { marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' };
-    const pageTitleStyle = { fontSize: '1.8rem', color: theme.colors.primary, fontWeight: '700' };
-    const formCardStyle = { backgroundColor: theme.colors.white, padding: '2rem', borderRadius: '12px', boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)' };
-    const formGridStyle = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' };
-    const inputGroupStyle = { display: 'flex', flexDirection: 'column', gap: '0.5rem' };
-    const labelStyle = { fontWeight: '600', fontSize: '0.9rem', color: theme.colors.primary };
-    const inputStyle = { padding: '0.75rem', borderRadius: '8px', border: `1px solid ${theme.colors.border}`, fontSize: '1rem', fontFamily: 'inherit' };
-    const checkboxGroupStyle = { display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', border: `1px solid ${theme.colors.border}`, borderRadius: '8px', cursor: 'pointer' };
-
-    const primaryBtnStyle = {
-        display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem',
-        backgroundColor: theme.colors.secondary, color: 'white', border: 'none', borderRadius: '8px',
-        fontWeight: '600', fontSize: '1rem'
-    };
-
+    // 5. USE STYLED COMPONENTS IN JSX
     return (
         <AdminLayout activePage="create-notice">
-            <div style={pageHeaderStyle}>
-                <h1 style={pageTitleStyle}>Create New Notice</h1>
-            </div>
+            <PageHeader>
+                <PageTitle>Create New Notice</PageTitle>
+            </PageHeader>
 
-            <div style={formCardStyle}>
+            <FormCard>
                 <form onSubmit={handleSubmit}>
-                    <div style={inputGroupStyle}>
-                        <label style={labelStyle}>Notice Title *</label>
-                        <input
+                    <InputGroup mb="1.5rem">
+                        <Label>Notice Title *</Label>
+                        <Input
                             type="text"
                             name="title"
                             value={formData.title}
                             onChange={handleChange}
                             placeholder="e.g., Mid-Sem Exam Schedule"
                             required
-                            style={{ ...inputStyle, fontSize: '1.1rem', marginBottom: '1.5rem' }}
+                            fontSize="1.1rem"
                         />
-                    </div>
+                    </InputGroup>
 
-                    <div style={formGridStyle}>
-                        <div style={inputGroupStyle}>
-                            <label style={labelStyle}>Category</label>
-                            <select
+                    <FormGrid>
+                        <InputGroup>
+                            <Label>Category</Label>
+                            <Select
                                 name="category"
                                 value={formData.category}
                                 onChange={handleChange}
-                                style={inputStyle}
                             >
                                 <option value="General">General</option>
                                 <option value="Exams">Exams</option>
                                 <option value="Placements">Placements</option>
                                 <option value="Events">Events</option>
                                 <option value="Holidays">Holidays</option>
-                            </select>
-                        </div>
-                        <div style={inputGroupStyle}>
-                            <label style={labelStyle}>Expiry Date (Optional)</label>
-                            <input
+                            </Select>
+                        </InputGroup>
+                        <InputGroup>
+                            <Label>Expiry Date (Optional)</Label>
+                            <Input
                                 type="date"
                                 name="expiryDate"
                                 value={formData.expiryDate}
                                 onChange={handleChange}
-                                style={inputStyle}
                             />
-                        </div>
-                    </div>
+                        </InputGroup>
+                    </FormGrid>
 
-                    <div style={{ ...inputGroupStyle, marginBottom: '1.5rem' }}>
-                        <label style={labelStyle}>Content *</label>
-                        <textarea
+                    <InputGroup mb="1.5rem">
+                        <Label>Content *</Label>
+                        <Textarea
                             name="content"
                             value={formData.content}
                             onChange={handleChange}
                             placeholder="Write the full details of the notice here..."
                             required
                             rows="6"
-                            style={{ ...inputStyle, resize: 'vertical' }}
                         />
-                    </div>
+                    </InputGroup>
 
-                    {/* Checkbox for "Pinning" the notice */}
-                    <div style={{ marginBottom: '2rem' }}>
-                         <label style={checkboxGroupStyle}>
-                            <input
-                                type="checkbox"
-                                name="isPinned"
-                                checked={formData.isPinned}
-                                onChange={handleChange}
-                                style={{ width: '18px', height: '18px', accentColor: theme.colors.secondary }}
-                            />
-                            <span style={{ fontWeight: '600', color: theme.colors.primary }}>
-                                Pin this notice to the top
-                            </span>
-                            <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                                (Urgent or important announcements)
-                            </span>
-                        </label>
-                    </div>
+                    <CheckboxGroup>
+                        <CheckboxInput
+                            type="checkbox"
+                            name="isPinned"
+                            checked={formData.isPinned}
+                            onChange={handleChange}
+                        />
+                        <span style={{ fontWeight: '600', color: theme.colors.primary }}>
+                            Pin this notice to the top
+                        </span>
+                        <span style={{ fontSize: '0.85rem', color: theme.colors.textLight }}>
+                            (Urgent or important announcements)
+                        </span>
+                    </CheckboxGroup>
 
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-                        <button type="button" style={{ ...primaryBtnStyle, backgroundColor: 'transparent', color: '#64748b', border: `1px solid ${theme.colors.border}` }}>
+                    <ButtonGroup>
+                        <Button type="button">
                             <X size={18} /> Cancel
-                        </button>
-                        <button type="submit" style={primaryBtnStyle}>
+                        </Button>
+                        <Button type="submit" primary>
                             <Save size={18} /> Publish Notice
-                        </button>
-                    </div>
+                        </Button>
+                    </ButtonGroup>
                 </form>
-            </div>
+            </FormCard>
         </AdminLayout>
     );
 };

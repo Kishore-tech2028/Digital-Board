@@ -1,23 +1,12 @@
 import { LogOut, LayoutDashboard, FilePlus, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom'; // 1. IMPORT useNavigate
+import theme from '../theme'; // Use the central theme
 
-// --- THEME VARIABLES (Keep these consistent across files in a real app) ---
-const theme = {
-    colors: {
-        primary: "#0f172a",
-        secondary: "#3b82f6",
-        bgLight: "#f1f5f9", // Slightly darker bg for admin area
-        white: "#ffffff",
-        border: "#e2e8f0",
-        textMain: "#334155",
-        danger: "#ef4444"
-    }
-};
-
-// --- STYLES ---
+// --- STYLES (Switched to central theme) ---
 const layoutStyle = {
     display: 'flex',
     minHeight: '100vh',
-    backgroundColor: theme.colors.bgLight
+    backgroundColor: theme.colors.bgLight || '#f1f5f9' // Added fallback
 };
 
 const sidebarStyle = {
@@ -26,7 +15,7 @@ const sidebarStyle = {
     color: theme.colors.white,
     display: 'flex',
     flexDirection: 'column',
-    position: 'fixed', // Keeps sidebar visible while scrolling content
+    position: 'fixed',
     height: '100vh',
     left: 0,
     top: 0
@@ -51,7 +40,7 @@ const navItemStyle = (isActive) => ({
     alignItems: 'center',
     gap: '0.75rem',
     padding: '0.875rem 1rem',
-    color: isActive ? theme.colors.white : '#94a3b8', // Highlight active, dim others
+    color: isActive ? theme.colors.white : '#94a3b8',
     backgroundColor: isActive ? 'rgba(255,255,255,0.1)' : 'transparent',
     borderRadius: '8px',
     marginBottom: '0.5rem',
@@ -62,7 +51,7 @@ const navItemStyle = (isActive) => ({
 });
 
 const mainContentStyle = {
-    marginLeft: '260px', // Match sidebar width
+    marginLeft: '260px',
     flex: 1,
     padding: '2.5rem'
 };
@@ -79,7 +68,7 @@ const logoutButtonStyle = {
     width: '100%',
     padding: '0.875rem 1rem',
     backgroundColor: 'transparent',
-    color: theme.colors.danger,
+    color: theme.colors.urgent, // Using theme color
     border: 'none',
     borderRadius: '8px',
     fontWeight: '600',
@@ -87,21 +76,27 @@ const logoutButtonStyle = {
     transition: 'background-color 0.2s',
 };
 
-// --- COMPONENT ---
-// Accepts 'children' (the specific page content) and 'activePage' prop
-const AdminLayout = ({ children, activePage = 'dashboard' }) => {
 
-    // Mock navigation handler for now. In real app, use react-router's useNavigate/Link
+const AdminLayout = ({ children, activePage = 'dashboard' }) => {
+    // 2. GET THE navigate FUNCTION
+    const navigate = useNavigate();
+
+    // 3. UPDATE HANDLER TO USE navigate
     const handleNavClick = (page) => {
-        console.log(`Navigating to ${page}... (Hook this up to standard router)`);
-        // window.location.href = `/admin/${page}`; // Standard way if using Router
+        if (page === 'dashboard') {
+            navigate('/admin/dashboard');
+        } else if (page === 'create-notice') {
+            navigate('/admin/createNotice');
+        } else if (page === 'users') {
+            navigate('/admin/users');
+        }
     };
 
     return (
         <div style={layoutStyle}>
             {/* SIDEBAR */}
             <aside style={sidebarStyle}>
-                <div style={brandStyle}>
+                <div style={brandStyle} >
                     Admin Portal
                 </div>
                 <nav style={navStyle}>
@@ -119,7 +114,6 @@ const AdminLayout = ({ children, activePage = 'dashboard' }) => {
                         <FilePlus size={20} />
                         Create Notice
                     </div>
-                    {/* "Jackfruit" feature: User Management placeholder */}
                     <div
                         style={navItemStyle(activePage === 'users')}
                         onClick={() => handleNavClick('users')}

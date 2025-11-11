@@ -110,7 +110,7 @@ const Button = styled.button`
 `;
 
 
-const AdminLogin = () => {
+const UserSign = () => {
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -192,4 +192,4 @@ const AdminLogin = () => {
     );
 };
 
-export default AdminLogin;
+export default UserSign;
