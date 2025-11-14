@@ -1,135 +1,92 @@
+// src/pages/AdminLogin.jsx
 import React, { useState } from 'react';
 import { Lock, Mail } from 'lucide-react';
+import { useNavigate } from 'react-router-dom'; // 1. IMPORT useNavigate
 import Nav from '../components/NavBar.jsx';
-import styled from 'styled-components'; // 1. Import styled-components
-import theme from '../theme'; // 2. Import central theme
+import styled from 'styled-components';
+import theme from '../theme';
 
-// 3. REMOVE local theme object
+// --- STYLED COMPONENTS (Unchanged) ---
+const Container = styled.div` /* ... */ `;
+const Card = styled.div` /* ... */ `;
+const Header = styled.div` /* ... */ `;
+const IconContainer = styled.div` /* ... */ `;
+const Title = styled.h2` /* ... */ `;
+const Subtitle = styled.p` /* ... */ `;
+const InputGroup = styled.div` /* ... */ `;
+const Label = styled.label` /* ... */ `;
+const InputWrapper = styled.div` /* ... */ `;
+const InputIcon = styled.div` /* ... */ `;
+const Input = styled.input` /* ... */ `;
+const Button = styled.button` /* ... */ `;
 
-// 4. DEFINE STYLED COMPONENTS
-const Container = styled.div`
-    min-height: 80vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-`;
-
-const Card = styled.div`
-    background-color: ${theme.colors.white};
-    padding: 2.5rem;
-    border-radius: 16px;
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-    width: 100%;
-    max-width: 400px;
-    border: 1px solid ${theme.colors.border};
-`;
-
-const Header = styled.div`
-    text-align: center;
-    margin-bottom: 2rem;
-`;
-
-const IconContainer = styled.div`
-    background-color: #dbeafe; // light blue bg
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1rem;
-`;
-
-const Title = styled.h2`
-    font-size: 1.5rem;
-    color: ${theme.colors.primary};
-    font-weight: 800;
-`;
-
-const Subtitle = styled.p`
-    color: ${theme.colors.textLight};
-    margin-top: 0.5rem;
-`;
-
-const InputGroup = styled.div`
-    margin-bottom: 1.25rem;
-`;
-
-const Label = styled.label`
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    color: ${theme.colors.primary};
+// 4. ADD A SIMPLE ERROR MESSAGE STYLE
+const ErrorMessage = styled.p`
+    color: ${theme.colors.urgent || '#ef4444'};
     font-size: 0.9rem;
-`;
-
-const InputWrapper = styled.div`
-    position: relative;
-    display: flex;
-    align-items: center;
-`;
-
-const InputIcon = styled.div`
-    position: absolute;
-    left: 12px;
-    color: ${theme.colors.textLight};
-    pointer-events: none;
-`;
-
-const Input = styled.input`
-    width: 100%;
-    padding: 0.75rem 1rem 0.75rem 2.5rem; // Extra left padding for icon
-    border-radius: 8px;
-    border: 2px solid ${theme.colors.border};
-    font-size: 1rem;
-    outline: none;
-    transition: border-color 0.2s;
-
-    &:focus {
-        border-color: ${theme.colors.secondary};
-    }
-`;
-
-const Button = styled.button`
-    width: 100%;
-    padding: 0.875rem;
-    background-color: ${theme.colors.primary};
-    color: ${theme.colors.white};
-    border: none;
-    border-radius: 8px;
-    font-weight: bold;
-    font-size: 1rem;
+    text-align: center;
     margin-top: 1rem;
-    transition: background-color 0.2s;
-    cursor: pointer;
-
-    &:hover {
-        background-color: ${theme.colors.secondary};
-    }
 `;
 
 
 const AdminLogin = () => {
     const [formData, setFormData] = useState({
-        email: '',
-        password: ''
+        email: 'admin@college.edu', // Pre-filled for easy testing
+        password: 'password123'    // Pre-filled for easy testing
     });
+    // 5. ADD NEW STATES
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const navigate = useNavigate(); // 6. GET THE NAVIGATE FUNCTION
 
     const handleChange = (e) => {
+        setError(''); // Clear error on change
         setFormData({
             ...formData,
             [e.target.name]: e.target.value
         });
     };
 
-    const handleSubmit = (e) => {
+    // 7. REPLACE THE handleSubmit FUNCTION
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Form submitted:", formData);
-        alert("Login logic will be connected to backend later!");
+        setLoading(true);
+        setError('');
+
+        try {
+            const response = await fetch('http://localhost:5000/api/admin/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                // Handle login failure (e.g., 401, 404)
+                throw new Error(data.message || 'Login failed');
+            }
+
+            // --- LOGIN SUCCESSFUL ---
+            console.log('Login successful:', data);
+            
+            // Store admin info (e.g., boardCode) in sessionStorage
+            // sessionStorage is cleared when the browser tab is closed
+            sessionStorage.setItem('adminBoardCode', data.boardCode);
+            
+            // Redirect to the admin dashboard
+            navigate('/admin/dashboard');
+
+        } catch (err) {
+            console.error(err);
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    // 5. USE STYLED COMPONENTS IN JSX
     return (
         <>
             <nav>
@@ -141,7 +98,7 @@ const AdminLogin = () => {
                         <IconContainer>
                             <Lock size={24} color={theme.colors.secondary} />
                         </IconContainer>
-                        <Title>Welcome Back</Title>
+                        <Title>Admin Login</Title>
                         <Subtitle>Please sign in to continue</Subtitle>
                     </Header>
 
@@ -182,8 +139,11 @@ const AdminLogin = () => {
                             </InputWrapper>
                         </InputGroup>
 
-                        <Button type="submit">
-                            Sign In to Dashboard
+                        {/* 8. SHOW ERROR MESSAGE */}
+                        {error && <ErrorMessage>{error}</ErrorMessage>}
+
+                        <Button type="submit" disabled={loading}>
+                            {loading ? 'Signing In...' : 'Sign In to Dashboard'}
                         </Button>
                     </form>
                 </Card>

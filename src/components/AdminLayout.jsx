@@ -1,7 +1,7 @@
 import { LogOut, LayoutDashboard, FilePlus, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom'; // 1. IMPORT useNavigate
 import theme from '../theme'; // Use the central theme
-
+import { ListCollapse } from 'lucide-react';
 // --- STYLES (Switched to central theme) ---
 const layoutStyle = {
     display: 'flex',
@@ -78,65 +78,41 @@ const logoutButtonStyle = {
 
 
 const AdminLayout = ({ children, activePage = 'dashboard' }) => {
-    // 2. GET THE navigate FUNCTION
     const navigate = useNavigate();
 
-    // 3. UPDATE HANDLER TO USE navigate
     const handleNavClick = (page) => {
         if (page === 'dashboard') {
             navigate('/admin/dashboard');
         } else if (page === 'create-notice') {
             navigate('/admin/createNotice');
-        } else if (page === 'users') {
-            navigate('/admin/users');
+        // 2. Change 'users' to 'notices'
+        } else if (page === 'notices') {
+            navigate('/admin/notices');
         }
     };
 
     return (
         <div style={layoutStyle}>
-            {/* SIDEBAR */}
             <aside style={sidebarStyle}>
-                <div style={brandStyle} >
-                    Admin Portal
-                </div>
+                {/* ... (brandStyle div) ... */}
                 <nav style={navStyle}>
+                    {/* ... (Dashboard link) ... */}
+                    
+                    {/* ... (Create Notice link) ... */}
+
+                    {/* 3. UPDATE THE "MANAGE USERS" LINK */}
                     <div
-                        style={navItemStyle(activePage === 'dashboard')}
-                        onClick={() => handleNavClick('dashboard')}
+                        style={navItemStyle(activePage === 'notices')}
+                        onClick={() => handleNavClick('notices')}
                     >
-                        <LayoutDashboard size={20} />
-                        Dashboard Overview
-                    </div>
-                    <div
-                        style={navItemStyle(activePage === 'create-notice')}
-                        onClick={() => handleNavClick('create-notice')}
-                    >
-                        <FilePlus size={20} />
-                        Create Notice
-                    </div>
-                    <div
-                        style={navItemStyle(activePage === 'users')}
-                        onClick={() => handleNavClick('users')}
-                    >
-                        <Users size={20} />
-                        Manage Users
+                        <ListCollapse size={20} />
+                        Manage Notices
                     </div>
                 </nav>
 
-                <div style={logoutContainerStyle}>
-                    <button
-                        style={logoutButtonStyle}
-                        onClick={() => alert("Logging out... (Backend required)")}
-                        onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'}
-                        onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
-                    >
-                        <LogOut size={20} />
-                        Sign Out
-                    </button>
-                </div>
+                {/* ... (logoutContainerStyle div) ... */}
             </aside>
 
-            {/* MAIN CONTENT AREA */}
             <main style={mainContentStyle}>
                 {children}
             </main>

@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+// src/components/NavBar.jsx
+import React from "react"; // Removed useState, useEffect
 import styled from "styled-components";
-import theme from "../theme"; // Import theme for consistency
+import theme from "../theme";
 
 // 1. REMOVE: import "../components/NavBar.css";
 
-// 2. DEFINE STYLED COMPONENTS
+// 2. STYLED COMPONENTS (Unchanged)
 const Nav = styled.nav`
   background-color: #333; // Keeping original color
   overflow: hidden;
@@ -12,142 +13,87 @@ const Nav = styled.nav`
   justify-content: space-between;
   align-items: center;
   padding: 14px 20px;
-
-  @media screen and (max-width: 600px) {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+  /* ... rest of styles */
 `;
 
 const Logo = styled.div`
-  color: #fff;
-  font-size: 24px;
-  text-decoration: none;
-  font-weight: bold;
+  /* ... styles */
 `;
 
 const NavLinks = styled.ul`
-  display: flex;
-  gap: 15px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-
-  @media screen and (max-width: 600px) {
-    flex-direction: column;
-    width: 100%;
-    margin-top: 10px;
-  }
+  /* ... styles */
 `;
 
 const NavLink = styled.a`
-  color: #fff;
-  text-decoration: none;
-  padding: 14px 16px;
-  transition: background-color 0.3s;
-
-  &:hover {
-    background-color: #575757;
-    border-radius: 4px;
-  }
-
-  @media screen and (max-width: 600px) {
-    width: 100%;
-    text-align: left;
-    padding: 10px 0;
-  }
+  /* ... styles */
 `;
 
-// Add avatar styled components and small person SVG fallback
 const AvatarButton = styled.button`
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  border: 2px solid rgba(255, 255, 255, 0.12);
-  background-color: rgba(255, 255, 255, 0.06);
-  cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
-  }
+  /* ... styles */
 `;
 
 const AvatarImg = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+  /* ... styles */
 `;
 
-// Minimal person icon wrapper so it scales nicely
 const PersonIcon = ({ size = 20, fill = "#fff" }) => (
   <svg
     width={size}
     height={size}
     viewBox="0 0 24 24"
     fill="none"
-    aria-hidden
-    focusable="false"
+    xmlns="http://www.w3.org/2000/svg"
   >
-    <path d="M12 12a4 4 0 100-8 4 4 0 000 8z" fill={fill} />
-    <path d="M4 20a8 8 0 0116 0" fill={fill} opacity="0.9" />
+    <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5z" fill={fill} />
+    <path d="M4 20c0-2.761 4.477-5 8-5s8 2.239 8 5v1H4v-1z" fill={fill} />
   </svg>
 );
 
-export default function NavBar() {
-  // 3. USE STYLED COMPONENTS IN JSX
-  const [user, setUser] = useState(null);
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("user");
-      if (raw) setUser(JSON.parse(raw));
-    } catch (e) {
-      /* ignore parse errors */
-    }
-  }, []);
-
-  const goToSignIn = () => {
-    // simple navigation to sign in page
-    window.location.href = "users/sign";
+// --- MODIFIED NAVBAR COMPONENT ---
+export default function NavBar({ mode = "public", boardCode }) { // 1. Accept props
+  
+  // 2. Simplified handler to always go to admin login
+  const goToAdminLogin = () => {
+    window.location.href = "/admin";
   };
 
   return (
     <Nav>
       <Logo>MyApp</Logo>
+
+      {/* 3. Conditional Links based on mode */}
       <NavLinks>
-        <li>
-          <NavLink href="/">Home</NavLink>
-        </li>
-        <li>
-          <NavLink href="/admin">Admin Login</NavLink>
-        </li>
-        <li>
-          <NavLink href="/users">User Home</NavLink>
-        </li>
-        <li>
-          <NavLink href="/admin/users">Manage Users</NavLink>
-        </li>
+        {mode === "public" && (
+          <>
+            <li>
+              <NavLink href="/">Home</NavLink>
+            </li>
+            <li>
+              <NavLink href="/admin">Admin Login</NavLink>
+            </li>
+          </>
+        )}
+
+        {mode === "board" && (
+          <>
+            <li>
+              <NavLink href="/">Home (Change Code)</NavLink>
+            </li>
+            {/* Display the board code user is viewing */}
+            <li style={{ padding: '14px 16px', color: '#94a3b8' }}>
+              Viewing: <strong>{boardCode}</strong>
+            </li>
+          </>
+        )}
       </NavLinks>
 
-      {/* Replace trailing Logo placeholder with the clickable circular avatar */}
+      {/* 4. Avatar button now just links to admin login */}
       <AvatarButton
-        onClick={goToSignIn}
-        title={user?.name ? `Signed in as ${user.name}` : "Sign in"}
+        onClick={goToAdminLogin}
+        title={"Admin Login"}
       >
-        {user?.photoUrl ? (
-          <AvatarImg src={user.photoUrl} alt={user.name || "User avatar"} />
-        ) : (
-          <PersonIcon />
-        )}
+        <PersonIcon />
       </AvatarButton>
-       
     </Nav>
   );
 }

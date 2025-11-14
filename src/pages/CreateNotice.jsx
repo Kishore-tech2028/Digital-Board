@@ -1,125 +1,45 @@
 import React, { useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
-import { Save, X } from 'lucide-react';
-import styled from 'styled-components'; // 1. Import
-import theme from '../theme'; // 2. Import
+import { Save, X, CheckCircle } from 'lucide-react'; // 1. Add CheckCircle
+import styled from 'styled-components';
+import theme from '../theme';
 
-// 3. REMOVE local theme object
+// --- STYLED COMPONENTS (Unchanged) ---
+const PageHeader = styled.div` /* ... */ `;
+const PageTitle = styled.h1` /* ... */ `;
+const FormCard = styled.div` /* ... */ `;
+const FormGrid = styled.div` /* ... */ `;
+const InputGroup = styled.div` /* ... */ `;
+const Label = styled.label` /* ... */ `;
+const BaseInputStyles = ` /* ... */ `;
+const Input = styled.input` /* ... */ `;
+const Select = styled.select` /* ... */ `;
+const Textarea = styled.textarea` /* ... */ `;
+const CheckboxGroup = styled.label` /* ... */ `;
+const CheckboxInput = styled.input` /* ... */ `;
+const Button = styled.button` /* ... */ `;
+const ButtonGroup = styled.div` /* ... */ `;
 
-// 4. DEFINE STYLED COMPONENTS
-const PageHeader = styled.div`
-    margin-bottom: 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-`;
-
-const PageTitle = styled.h1`
-    font-size: 1.8rem;
-    color: ${theme.colors.primary};
-    font-weight: 700;
-`;
-
-const FormCard = styled.div`
-    background-color: ${theme.colors.white};
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-`;
-
-const FormGrid = styled.div`
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
+// 2. ADD MESSAGE STYLES
+const Message = styled.p`
     margin-bottom: 1.5rem;
-
-    @media (max-width: 768px) {
-        grid-template-columns: 1fr;
-    }
-`;
-
-const InputGroup = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-bottom: ${props => props.mb || 0};
-`;
-
-const Label = styled.label`
+    padding: 1rem;
+    border-radius: 8px;
     font-weight: 600;
     font-size: 0.9rem;
-    color: ${theme.colors.primary};
-`;
-
-const BaseInputStyles = `
-    padding: 0.75rem;
-    border-radius: 8px;
-    border: 1px solid ${theme.colors.border};
-    font-size: 1rem;
-    font-family: inherit;
-    color: ${theme.colors.textMain};
-    background-color: ${theme.colors.white};
-
-    &:focus {
-        border-color: ${theme.colors.secondary};
-        outline: none;
+    
+    &.error {
+        background-color: #fee2e2; // red-100
+        color: ${theme.colors.urgent || '#ef4444'};
     }
-`;
 
-const Input = styled.input`
-    ${BaseInputStyles}
-    font-size: ${props => props.fontSize || '1rem'};
-`;
-
-const Select = styled.select`
-    ${BaseInputStyles}
-`;
-
-const Textarea = styled.textarea`
-    ${BaseInputStyles}
-    resize: vertical;
-`;
-
-const CheckboxGroup = styled.label`
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem;
-    border: 1px solid ${theme.colors.border};
-    border-radius: 8px;
-    cursor: pointer;
-    margin-bottom: 2rem;
-`;
-
-const CheckboxInput = styled.input`
-    width: 18px;
-    height: 18px;
-    accent-color: ${theme.colors.secondary};
-`;
-
-const Button = styled.button`
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    background-color: ${props => props.primary ? theme.colors.secondary : 'transparent'};
-    color: ${props => props.primary ? theme.colors.white : theme.colors.textLight};
-    border: 1px solid ${props => props.primary ? 'transparent' : theme.colors.border};
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    &:hover {
-        opacity: 0.9;
+    &.success {
+        background-color: #dcfce7; // green-100
+        color: #166534; // green-800
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
-`;
-
-const ButtonGroup = styled.div`
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
 `;
 
 
@@ -129,22 +49,69 @@ const CreateNotice = () => {
         category: 'General',
         content: '',
         isPinned: false,
-        expiryDate: ''
+        expiryDate: '' // Note: our backend doesn't use this yet, but that's okay
     });
 
+    // 3. ADD STATES FOR API CALLS
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+
     const handleChange = (e) => {
+        setError('');
+        setSuccess('');
         const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
         setFormData({ ...formData, [e.target.name]: value });
     };
 
-    const handleSubmit = (e) => {
+    // 4. REPLACE handleSubmit
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("New Notice Data:", formData);
-        alert("Notice 'created'! (Need backend to actually save it)");
-        setFormData({ title: '', category: 'General', content: '', isPinned: false, expiryDate: '' });
+        setLoading(true);
+        setError('');
+        setSuccess('');
+
+        // Get the boardCode saved during login
+        const boardCode = sessionStorage.getItem('adminBoardCode');
+        if (!boardCode) {
+            setError('Could not find admin board code. Please log in again.');
+            setLoading(false);
+            return;
+        }
+
+        const noticeData = {
+            ...formData,
+            boardCode: boardCode // Add the boardCode to the notice
+        };
+        
+        try {
+            const response = await fetch('http://localhost:5000/api/notices', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(noticeData),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Failed to create notice');
+            }
+
+            // Success!
+            setSuccess('Notice published successfully!');
+            // Clear the form
+            setFormData({ title: '', category: 'General', content: '', isPinned: false, expiryDate: '' });
+
+        } catch (err) {
+            console.error(err);
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    // 5. USE STYLED COMPONENTS IN JSX
     return (
         <AdminLayout activePage="create-notice">
             <PageHeader>
@@ -153,6 +120,15 @@ const CreateNotice = () => {
 
             <FormCard>
                 <form onSubmit={handleSubmit}>
+                    
+                    {/* 5. SHOW MESSAGES */}
+                    {error && <Message className="error">{error}</Message>}
+                    {success && (
+                        <Message className="success">
+                            <CheckCircle size={18} /> {success}
+                        </Message>
+                    )}
+
                     <InputGroup mb="1.5rem">
                         <Label>Notice Title *</Label>
                         <Input
@@ -163,6 +139,7 @@ const CreateNotice = () => {
                             placeholder="e.g., Mid-Sem Exam Schedule"
                             required
                             fontSize="1.1rem"
+                            disabled={loading}
                         />
                     </InputGroup>
 
@@ -173,6 +150,7 @@ const CreateNotice = () => {
                                 name="category"
                                 value={formData.category}
                                 onChange={handleChange}
+                                disabled={loading}
                             >
                                 <option value="General">General</option>
                                 <option value="Exams">Exams</option>
@@ -188,6 +166,7 @@ const CreateNotice = () => {
                                 name="expiryDate"
                                 value={formData.expiryDate}
                                 onChange={handleChange}
+                                disabled={loading}
                             />
                         </InputGroup>
                     </FormGrid>
@@ -201,6 +180,7 @@ const CreateNotice = () => {
                             placeholder="Write the full details of the notice here..."
                             required
                             rows="6"
+                            disabled={loading}
                         />
                     </InputGroup>
 
@@ -210,6 +190,7 @@ const CreateNotice = () => {
                             name="isPinned"
                             checked={formData.isPinned}
                             onChange={handleChange}
+                            disabled={loading}
                         />
                         <span style={{ fontWeight: '600', color: theme.colors.primary }}>
                             Pin this notice to the top
@@ -220,11 +201,12 @@ const CreateNotice = () => {
                     </CheckboxGroup>
 
                     <ButtonGroup>
-                        <Button type="button">
+                        <Button type="button" disabled={loading}>
                             <X size={18} /> Cancel
                         </Button>
-                        <Button type="submit" primary>
-                            <Save size={18} /> Publish Notice
+                        <Button type="submit" primary disabled={loading}>
+                            <Save size={18} /> 
+                            {loading ? 'Publishing...' : 'Publish Notice'}
                         </Button>
                     </ButtonGroup>
                 </form>
