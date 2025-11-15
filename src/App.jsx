@@ -1,17 +1,17 @@
-// src/App.jsx
-import React from "react";
+// Modules and Packages imports
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import styled from "styled-components"; // 1. Import styled-components
+import styled from "styled-components"; // 
 import { Toaster } from "react-hot-toast";
 import theme from "./theme";
+
 // Page imports
+
 import Home from "./pages/Home.jsx";
 import AdminLogin from "./pages/AdminLogin.jsx";
 import CreateNotice from "./pages/CreateNotice.jsx";
 import ManageNotices from "./pages/ManageNotices.jsx";
 import Admin from "./pages/Admin.jsx";
 import PublicNoticeBoard from "./pages/PublicNoticeBoard.jsx";
-// 2. Corrected file name (was EditNotices.jsx)
 import EditNotice from "./pages/EditNotices.jsx";
 
 // 3. Define AppContainer

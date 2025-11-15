@@ -163,13 +163,14 @@ function ManageNotices() {
         try {
           const data = await response.json();
           msg = data.message || msg;
-        } catch (e) { /* ignore */ }
+        } catch (e) {
+          /* ignore */
+        }
         throw new Error(msg);
       }
 
       toast.success("Notice deleted successfully!");
       await fetchNotices(); // Refresh list
-
     } catch (err) {
       toast.error(err.message || "An error occurred.");
       setError(err.message);
@@ -229,7 +230,9 @@ function ManageNotices() {
             {!loading &&
               !error &&
               filteredNotices.map((notice) => (
-                <tr key={notice._id}> {/* 5. FIX: Cleaned up key */}
+                <tr key={notice._id}>
+                  {" "}
+                  {/* 5. FIX: Cleaned up key */}
                   <Td style={{ fontWeight: "600" }}>{notice.title}</Td>
                   <Td>
                     {/* 6. FIX: Pass prop as $category */}
@@ -245,7 +248,7 @@ function ManageNotices() {
                   <ActionCell>
                     <IconButton
                       color={theme.colors.secondary}
-                      onClick={() => handleEdit(notice._id)} 
+                      onClick={() => handleEdit(notice._id)}
                       title="Edit Notice"
                     >
                       <Edit size={18} />
@@ -270,7 +273,7 @@ function ManageNotices() {
           </p>
         )}
       </Card>
-      
+
       {/* The modal is rendered here. It's hidden until isModalOpen = true */}
       <ConfirmationModal
         isOpen={isModalOpen}

@@ -2,18 +2,10 @@ import React, { useState } from 'react';
 import { Bell, Search, Filter } from 'lucide-react';
 import NoticeCard from '../components/NoticeCard';
 import NavBar from '../components/NavBar';
-import styled from 'styled-components'; // 1. Import
-import theme from '../theme'; // 2. Import
+import styled from 'styled-components'; 
+import theme from '../theme'; 
 
-// 3. REMOVE local theme object
 
-// --- DUMMY DATA (unchanged) ---
-const DUMMY_NOTICES = [
-    { id: 1, title: "Mid-Semester Exam Schedule Released", date: "Oct 25, 2023", category: "Exams", content: "The final schedule for the Fall 2023 mid-semester exams has been released. Please check the attached PDF for your specific department's timetable.", isPinned: true },
-    { id: 2, title: "Campus Recruitment Drive: TCS", date: "Oct 24, 2023", category: "Placements", content: "Tata Consultancy Services (TCS) will be visiting our campus for recruitment on Nov 5th. Eligible students (CGPA > 7.0) must register by this Friday.", isPinned: false },
-    { id: 3, title: "Diwali Holiday Announcement", date: "Oct 22, 2023", category: "Holidays", content: "The university will remain closed from Nov 10th to Nov 15th for Diwali celebrations. Classes will resume on Nov 16th.", isPinned: false },
-    { id: 4, title: "Annual Tech Fest 'Technova' Registration", date: "Oct 20, 2023", category: "Events", content: "Registration for all Technova events is now open! Visit the student council office or the official website to register your teams.", isPinned: false },
-];
 const CATEGORIES = ["All", "Exams", "Placements", "Events", "Holidays", "General"];
 
 
@@ -116,13 +108,6 @@ const NoNotices = styled.div`
 const Home = () => {
     const [activeCategory, setActiveCategory] = useState("All");
     const [searchTerm, setSearchTerm] = useState("");
-
-    const filteredNotices = DUMMY_NOTICES.filter(notice => {
-        const matchesCategory = activeCategory === "All" || notice.category === activeCategory;
-        const matchesSearch = notice.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            notice.content.toLowerCase().includes(searchTerm.toLowerCase());
-        return matchesCategory && matchesSearch;
-    });
 
     // 5. USE STYLED COMPONENTS IN JSX
     return (

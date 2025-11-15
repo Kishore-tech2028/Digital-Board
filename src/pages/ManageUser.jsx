@@ -1,17 +1,8 @@
 import React, { useState } from "react";
 import AdminLayout from "../components/AdminLayout";
 import { Users, Search, Edit, Trash2, UserPlus } from "lucide-react";
-import styled from "styled-components"; // 1. Import
-import theme from "../theme"; // 2. Import
-
-// 3. REMOVE local theme object
-
-// --- DUMMY DATA ---
-const DUMMY_USERS = [
-  { id: 1, name: "Alice Admin", email: "alice@college.edu", role: "Admin" },
-  { id: 2, name: "Bob Faculty", email: "bob@college.edu", role: "User" },
-  { id: 3, name: "Charlie Staff", email: "charlie@college.edu", role: "User" },
-];
+import styled from "styled-components";
+import theme from "../theme";
 
 // 4. DEFINE STYLED COMPONENTS
 const PageHeader = styled.div`
@@ -79,8 +70,10 @@ const Td = styled.td`
 `;
 
 const RoleBadge = styled.span`
-  background-color: ${props => props.role === "Admin" ? "#dbeafe" : "#f1f5f9"};
-  color: ${props => props.role === "Admin" ? "#1e40af" : theme.colors.textMain};
+  background-color: ${(props) =>
+    props.role === "Admin" ? "#dbeafe" : "#f1f5f9"};
+  color: ${(props) =>
+    props.role === "Admin" ? "#1e40af" : theme.colors.textMain};
   padding: 0.25rem 0.75rem;
   border-radius: 99px;
   font-size: 0.8rem;
@@ -93,13 +86,13 @@ const IconButton = styled.button`
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 50%;
-  color: ${props => props.color || theme.colors.textLight};
+  color: ${(props) => props.color || theme.colors.textLight};
   display: inline-flex;
   align-items: center;
   transition: background-color 0.2s;
 
   &:hover {
-    background-color: rgba(0,0,0,0.05);
+    background-color: rgba(0, 0, 0, 0.05);
   }
 `;
 
@@ -139,9 +132,7 @@ function ManageUsers() {
           <Users size={28} />
           Manage Users
         </PageTitle>
-        <PrimaryButton
-          onClick={() => alert("Open 'Create New User' modal...")}
-        >
+        <PrimaryButton onClick={() => alert("Open 'Create New User' modal...")}>
           <UserPlus size={18} />
           Add New User
         </PrimaryButton>
@@ -208,6 +199,6 @@ function ManageUsers() {
       </Card>
     </AdminLayout>
   );
-};
+}
 
 export default ManageUsers;
