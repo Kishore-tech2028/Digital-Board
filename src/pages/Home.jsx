@@ -14,6 +14,9 @@ const HomeContainer = styled.div`
     padding: 4rem 2rem;
     text-align: center;
     min-height: 60vh;
+
+    /* New Gradient Background */
+    background-image: linear-gradient(120deg, #f8fafc 0%, #f0f9ff 100%);
 `;
 
 const Title = styled.h1`

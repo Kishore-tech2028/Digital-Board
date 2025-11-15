@@ -1,12 +1,13 @@
-import { LogOut, LayoutDashboard, FilePlus, Users } from 'lucide-react';
-import { useNavigate } from 'react-router-dom'; // 1. IMPORT useNavigate
-import theme from '../theme'; // Use the central theme
-import { ListCollapse } from 'lucide-react';
-// --- STYLES (Switched to central theme) ---
+import React from 'react';
+import { LogOut, LayoutDashboard, FilePlus, ListCollapse } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import theme from '../theme';
+
+// --- STYLES ---
 const layoutStyle = {
     display: 'flex',
     minHeight: '100vh',
-    backgroundColor: theme.colors.bgLight || '#f1f5f9' // Added fallback
+    backgroundColor: theme.colors.bgLight || '#f1f5f9'
 };
 
 const sidebarStyle = {
@@ -18,7 +19,8 @@ const sidebarStyle = {
     position: 'fixed',
     height: '100vh',
     left: 0,
-    top: 0
+    top: 0,
+    zIndex: 100
 };
 
 const brandStyle = {
@@ -53,7 +55,8 @@ const navItemStyle = (isActive) => ({
 const mainContentStyle = {
     marginLeft: '260px',
     flex: 1,
-    padding: '2.5rem'
+    padding: '2.5rem',
+    width: 'calc(100% - 260px)'
 };
 
 const logoutContainerStyle = {
@@ -68,12 +71,13 @@ const logoutButtonStyle = {
     width: '100%',
     padding: '0.875rem 1rem',
     backgroundColor: 'transparent',
-    color: theme.colors.urgent, // Using theme color
+    color: theme.colors.urgent,
     border: 'none',
     borderRadius: '8px',
     fontWeight: '600',
     cursor: 'pointer',
     transition: 'background-color 0.2s',
+    fontSize: '0.9rem'
 };
 
 
@@ -85,22 +89,44 @@ const AdminLayout = ({ children, activePage = 'dashboard' }) => {
             navigate('/admin/dashboard');
         } else if (page === 'create-notice') {
             navigate('/admin/createNotice');
-        // 2. Change 'users' to 'notices'
         } else if (page === 'notices') {
             navigate('/admin/notices');
         }
     };
 
+    const handleLogout = () => {
+        // Clear session and go back to login
+        sessionStorage.removeItem('adminBoardCode');
+        navigate('/admin');
+    };
+
     return (
         <div style={layoutStyle}>
             <aside style={sidebarStyle}>
-                {/* ... (brandStyle div) ... */}
+                <div style={brandStyle}>
+                    Admin Panel
+                </div>
+                
                 <nav style={navStyle}>
-                    {/* ... (Dashboard link) ... */}
-                    
-                    {/* ... (Create Notice link) ... */}
+                    {/* 1. Dashboard Link */}
+                    <div
+                        style={navItemStyle(activePage === 'dashboard')}
+                        onClick={() => handleNavClick('dashboard')}
+                    >
+                        <LayoutDashboard size={20} />
+                        Dashboard
+                    </div>
 
-                    {/* 3. UPDATE THE "MANAGE USERS" LINK */}
+                    {/* 2. Create Notice Link */}
+                    <div
+                        style={navItemStyle(activePage === 'create-notice')}
+                        onClick={() => handleNavClick('create-notice')}
+                    >
+                        <FilePlus size={20} />
+                        Create Notice
+                    </div>
+
+                    {/* 3. Manage Notices Link */}
                     <div
                         style={navItemStyle(activePage === 'notices')}
                         onClick={() => handleNavClick('notices')}
@@ -110,7 +136,15 @@ const AdminLayout = ({ children, activePage = 'dashboard' }) => {
                     </div>
                 </nav>
 
-                {/* ... (logoutContainerStyle div) ... */}
+                <div style={logoutContainerStyle}>
+                    <button 
+                        style={logoutButtonStyle}
+                        onClick={handleLogout}
+                    >
+                        <LogOut size={20} />
+                        Logout
+                    </button>
+                </div>
             </aside>
 
             <main style={mainContentStyle}>

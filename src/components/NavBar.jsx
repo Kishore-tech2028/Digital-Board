@@ -1,67 +1,94 @@
-// src/components/NavBar.jsx
-import React from "react"; // Removed useState, useEffect
+import React from "react";
 import styled from "styled-components";
-import theme from "../theme";
+import theme from "../theme"; // We will now use the theme colors
+import { Bell, User } from "lucide-react"; // Using Lucide for a cleaner icon
 
-// 1. REMOVE: import "../components/NavBar.css";
+// --- STYLED COMPONENTS (Updated) ---
 
-// 2. STYLED COMPONENTS (Unchanged)
 const Nav = styled.nav`
-  background-color: #333; // Keeping original color
-  overflow: hidden;
+  /* New Colors & Style */
+  background-color: ${theme.colors.surface};
+  border-bottom: 1px solid ${theme.colors.border};
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 20px;
-  /* ... rest of styles */
+  padding: 0.75rem 2rem; /* Adjusted padding */
+  height: 64px;
 `;
 
-const Logo = styled.div`
-  /* ... styles */
+const Logo = styled.a` // Changed to an <a> tag
+  color: ${theme.colors.primary};
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 `;
 
 const NavLinks = styled.ul`
-  /* ... styles */
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 0.5rem; /* Reduced gap */
+  align-items: center;
 `;
 
 const NavLink = styled.a`
-  /* ... styles */
+  color: ${theme.colors.textMain};
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+
+  &:hover {
+    background-color: ${theme.colors.bgLight};
+  }
 `;
 
-const AvatarButton = styled.button`
-  /* ... styles */
+const AdminButton = styled.a`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: ${theme.colors.bgLight};
+  color: ${theme.colors.textMain};
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background-color 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    background-color: ${theme.colors.border};
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
 `;
 
-const AvatarImg = styled.img`
-  /* ... styles */
+const BoardCode = styled.span`
+  padding: 0.5rem 1rem;
+  color: ${theme.colors.textLight};
+  font-size: 0.9rem;
+
+  strong {
+    color: ${theme.colors.primary};
+  }
 `;
 
-const PersonIcon = ({ size = 20, fill = "#fff" }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5z" fill={fill} />
-    <path d="M4 20c0-2.761 4.477-5 8-5s8 2.239 8 5v1H4v-1z" fill={fill} />
-  </svg>
-);
 
-// --- MODIFIED NAVBAR COMPONENT ---
-export default function NavBar({ mode = "public", boardCode }) { // 1. Accept props
-  
-  // 2. Simplified handler to always go to admin login
-  const goToAdminLogin = () => {
-    window.location.href = "/admin";
-  };
-
+export default function NavBar({ mode = "public", boardCode }) {
   return (
     <Nav>
-      <Logo>MyApp</Logo>
+      <Logo href="/">
+        <Bell size={24} />
+        NoticeBoard
+      </Logo>
 
-      {/* 3. Conditional Links based on mode */}
       <NavLinks>
         {mode === "public" && (
           <>
@@ -69,7 +96,10 @@ export default function NavBar({ mode = "public", boardCode }) { // 1. Accept pr
               <NavLink href="/">Home</NavLink>
             </li>
             <li>
-              <NavLink href="/admin">Admin Login</NavLink>
+              <AdminButton href="/admin">
+                <User size={16} />
+                Admin Login
+              </AdminButton>
             </li>
           </>
         )}
@@ -77,23 +107,16 @@ export default function NavBar({ mode = "public", boardCode }) { // 1. Accept pr
         {mode === "board" && (
           <>
             <li>
-              <NavLink href="/">Home (Change Code)</NavLink>
+              <NavLink href="/">Change Code</NavLink>
             </li>
-            {/* Display the board code user is viewing */}
-            <li style={{ padding: '14px 16px', color: '#94a3b8' }}>
-              Viewing: <strong>{boardCode}</strong>
+            <li>
+              <BoardCode>
+                Viewing: <strong>{boardCode}</strong>
+              </BoardCode>
             </li>
           </>
         )}
       </NavLinks>
-
-      {/* 4. Avatar button now just links to admin login */}
-      <AvatarButton
-        onClick={goToAdminLogin}
-        title={"Admin Login"}
-      >
-        <PersonIcon />
-      </AvatarButton>
     </Nav>
   );
 }

@@ -1,60 +1,210 @@
-// src/pages/AdminLogin.jsx
 import React, { useState } from 'react';
-import { Lock, Mail } from 'lucide-react';
-import { useNavigate } from 'react-router-dom'; // 1. IMPORT useNavigate
+import { Lock, Mail, UserPlus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import Nav from '../components/NavBar.jsx';
 import styled from 'styled-components';
 import theme from '../theme';
 
-// --- STYLED COMPONENTS (Unchanged) ---
-const Container = styled.div` /* ... */ `;
-const Card = styled.div` /* ... */ `;
-const Header = styled.div` /* ... */ `;
-const IconContainer = styled.div` /* ... */ `;
-const Title = styled.h2` /* ... */ `;
-const Subtitle = styled.p` /* ... */ `;
-const InputGroup = styled.div` /* ... */ `;
-const Label = styled.label` /* ... */ `;
-const InputWrapper = styled.div` /* ... */ `;
-const InputIcon = styled.div` /* ... */ `;
-const Input = styled.input` /* ... */ `;
-const Button = styled.button` /* ... */ `;
+// --- STYLED COMPONENTS (from your file) ---
+const Container = styled.div` 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 90vh; // Use min-height
+    padding: 2rem 0;
+`;
+const Card = styled.div`
+    width: 420px;
+    max-width: calc(100vw - 40px);
+    background: ${theme.colors.surface || '#ffffff'};
+    padding: 2.25rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(2,6,23,0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+`;
 
-// 4. ADD A SIMPLE ERROR MESSAGE STYLE
+const Header = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+`;
+
+const IconContainer = styled.div`
+    width: 56px;
+    height: 56px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: ${theme.colors.primary || '#0ea5a4'};
+    color: ${theme.colors.onPrimary || '#fff'};
+    box-shadow: 0 6px 18px rgba(2,6,23,0.06);
+`;
+
+const Title = styled.h2`
+    margin: 0;
+    font-size: 1.25rem;
+    color: ${theme.colors.title || '#0f172a'};
+    font-weight: 600;
+`;
+
+const Subtitle = styled.p`
+    margin: 0;
+    font-size: 0.95rem;
+    color: ${theme.colors.muted || '#6b7280'};
+`;
+
+const InputGroup = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    margin-bottom: 0.5rem;
+`;
+
+const Label = styled.label`
+    font-size: 0.85rem;
+    color: ${theme.colors.muted || '#6b7280'};
+    font-weight: 500;
+`;
+
+const InputWrapper = styled.div`
+    position: relative;
+    display: flex;
+    align-items: center;
+`;
+
+const InputIcon = styled.div`
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    color: ${theme.colors.muted || '#9ca3af'};
+    pointer-events: none;
+`;
+
+const Input = styled.input`
+    width: 100%;
+    padding: 0.6rem 0.9rem 0.6rem 2.6rem;
+    height: 44px;
+    border: 1px solid ${theme.colors.border || '#e6e9ef'};
+    border-radius: 8px;
+    background: ${theme.colors.inputBg || '#fff'};
+    color: ${theme.colors.text || '#0f172a'};
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.12s ease;
+
+    &:focus {
+        border-color: ${theme.colors.primary || '#0ea5a4'};
+        box-shadow: 0 4px 14px rgba(14,165,164,0.08);
+    }
+
+    &::placeholder {
+        color: ${theme.colors.muted || '#9ca3af'};
+    }
+`;
+
+const Button = styled.button`
+    width: 100%;
+    padding: 0.85rem 1rem;
+    margin-top: 0.5rem;
+    border: none;
+    border-radius: 8px;
+    background: ${theme.colors.primary || '#0ea5a4'};
+    color: ${theme.colors.onPrimary || '#ffffff'};
+    font-weight: 600;
+    font-size: 0.98rem;
+    cursor: pointer;
+    transition: opacity 0.12s ease, transform 0.08s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover:not(:disabled) {
+        transform: translateY(-1px);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+`;
+
 const ErrorMessage = styled.p`
     color: ${theme.colors.urgent || '#ef4444'};
     font-size: 0.9rem;
     text-align: center;
-    margin-top: 1rem;
+    margin-bottom: 0.5rem; // Adjusted margin
+`;
+
+const SuccessMessage = styled.p`
+    color: #166534; // green-800
+    background-color: #dcfce7; // green-100
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    text-align: center;
+    margin-bottom: 0.5rem; // Adjusted margin
+`;
+
+const ToggleButton = styled.button`
+    background: none;
+    border: none;
+    color: ${theme.colors.secondary || theme.colors.muted};
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-top: 1rem; // Adjusted margin
+    width: 100%;
+    
+    &:hover {
+        color: ${theme.colors.primary};
+    }
 `;
 
 
 const AdminLogin = () => {
+    // --- 1. ADD STATE FOR LOGIN/SIGNUP MODE ---
+    const [isLoginMode, setIsLoginMode] = useState(true);
+
     const [formData, setFormData] = useState({
-        email: 'admin@college.edu', // Pre-filled for easy testing
-        password: 'password123'    // Pre-filled for easy testing
+        email: '',
+        password: ''
     });
-    // 5. ADD NEW STATES
+    
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const navigate = useNavigate(); // 6. GET THE NAVIGATE FUNCTION
+    const [success, setSuccess] = useState(''); // For signup success
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
-        setError(''); // Clear error on change
+        setError('');
+        setSuccess('');
         setFormData({
             ...formData,
             [e.target.name]: e.target.value
         });
     };
 
-    // 7. REPLACE THE handleSubmit FUNCTION
+    // --- 2. COMBINED handleSubmit FUNCTION ---
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
+        setSuccess('');
+
+        // Determine which endpoint to call
+        const endpoint = isLoginMode ? '/api/admin/login' : '/api/admin/signup';
 
         try {
-            const response = await fetch('http://localhost:5000/api/admin/login', {
+            const response = await fetch(`http://localhost:5000${endpoint}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -65,19 +215,20 @@ const AdminLogin = () => {
             const data = await response.json();
 
             if (!response.ok) {
-                // Handle login failure (e.g., 401, 404)
-                throw new Error(data.message || 'Login failed');
+                throw new Error(data.message || 'An error occurred');
             }
 
-            // --- LOGIN SUCCESSFUL ---
-            console.log('Login successful:', data);
-            
-            // Store admin info (e.g., boardCode) in sessionStorage
-            // sessionStorage is cleared when the browser tab is closed
-            sessionStorage.setItem('adminBoardCode', data.boardCode);
-            
-            // Redirect to the admin dashboard
-            navigate('/admin/dashboard');
+            if (isLoginMode) {
+                // --- LOGIN SUCCESSFUL ---
+                console.log('Login successful:', data);
+                sessionStorage.setItem('adminBoardCode', data.boardCode);
+                navigate('/admin/dashboard');
+            } else {
+                // --- SIGNUP SUCCESSFUL ---
+                setSuccess('Account created! Please log in.');
+                setIsLoginMode(true); // Flip back to login mode
+                setFormData({ email: formData.email, password: '' }); // Keep email, clear pass
+            }
 
         } catch (err) {
             console.error(err);
@@ -87,6 +238,14 @@ const AdminLogin = () => {
         }
     };
 
+    // --- 3. TOGGLE MODE HANDLER ---
+    const toggleMode = () => {
+        setIsLoginMode(!isLoginMode);
+        setError('');
+        setSuccess('');
+        setFormData({ email: '', password: '' }); // Clear form
+    };
+
     return (
         <>
             <nav>
@@ -94,15 +253,26 @@ const AdminLogin = () => {
             </nav>
             <Container>
                 <Card>
+                    {/* --- 4. DYNAMIC HEADER --- */}
                     <Header>
                         <IconContainer>
-                            <Lock size={24} color={theme.colors.secondary} />
+                            {isLoginMode ? (
+                                <Lock size={24} color={'#fff'} />
+                            ) : (
+                                <UserPlus size={24} color={'#fff'} />
+                            )}
                         </IconContainer>
-                        <Title>Admin Login</Title>
-                        <Subtitle>Please sign in to continue</Subtitle>
+                        <Title>{isLoginMode ? 'Admin Login' : 'Admin Sign Up'}</Title>
+                        <Subtitle>
+                            {isLoginMode ? 'Please sign in to continue' : 'Create a new admin account'}
+                        </Subtitle>
                     </Header>
 
                     <form onSubmit={handleSubmit}>
+                        {/* 5. SHOW SUCCESS/ERROR MESSAGES */}
+                        {error && <ErrorMessage>{error}</ErrorMessage>}
+                        {success && <SuccessMessage>{success}</SuccessMessage>}
+                        
                         <InputGroup>
                             <Label htmlFor="email">Email Address</Label>
                             <InputWrapper>
@@ -139,13 +309,22 @@ const AdminLogin = () => {
                             </InputWrapper>
                         </InputGroup>
 
-                        {/* 8. SHOW ERROR MESSAGE */}
-                        {error && <ErrorMessage>{error}</ErrorMessage>}
-
+                        {/* --- 6. DYNAMIC BUTTON TEXT --- */}
                         <Button type="submit" disabled={loading}>
-                            {loading ? 'Signing In...' : 'Sign In to Dashboard'}
+                            {loading
+                                ? (isLoginMode ? 'Signing In...' : 'Creating Account...')
+                                : (isLoginMode ? 'Sign In to Dashboard' : 'Create Account')
+                            }
                         </Button>
                     </form>
+
+                    {/* --- 7. TOGGLE BUTTON --- */}
+                    <ToggleButton onClick={toggleMode} disabled={loading}>
+                        {isLoginMode
+                            ? "Need an account? Sign Up"
+                            : "Already have an account? Log In"
+                        }
+                    </ToggleButton>
                 </Card>
             </Container>
         </>

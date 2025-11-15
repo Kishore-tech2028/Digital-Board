@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+// src/pages/EditNotice.jsx
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "../components/AdminLayout";
-import { Save, X, CheckCircle } from "lucide-react"; // 1. Add CheckCircle
+import { Save, X, CheckCircle, Loader } from "lucide-react";
 import styled from "styled-components";
 import theme from "../theme";
 
-// --- STYLED COMPONENTS (Unchanged) ---
 // --- STYLED COMPONENTS ---
 const PageHeader = styled.div`
   display: flex;
@@ -212,19 +213,58 @@ const Message = styled.p`
   }
 `;
 
-const CreateNotice = () => {
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4rem;
+  gap: 1rem;
+`;
+
+// --- EDIT NOTICE COMPONENT ---
+const EditNotice = () => {
+  const { id } = useParams(); // Get the notice ID from the URL
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     title: "",
     category: "General",
     content: "",
     isPinned: false,
-    expiryDate: "", // Note: our backend doesn't use this yet, but that's okay
   });
 
-  // 3. ADD STATES FOR API CALLS
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Start true to fetch data
+  const [submitting, setSubmitting] = useState(false); // For submit button
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // 1. Fetch the notice data on component load
+  useEffect(() => {
+    const fetchNotice = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const response = await fetch(`http://localhost:5000/api/notices/${id}`);
+        if (!response.ok) {
+          throw new Error("Could not fetch notice data.");
+        }
+        const data = await response.json();
+        // Set the form data with the fetched notice
+        setFormData({
+          title: data.title,
+          category: data.category,
+          content: data.content,
+          isPinned: data.isPinned,
+        });
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNotice();
+  }, [id]); // Re-run if ID changes
 
   const handleChange = (e) => {
     setError("");
@@ -234,68 +274,58 @@ const CreateNotice = () => {
     setFormData({ ...formData, [e.target.name]: value });
   };
 
-  // 4. REPLACE handleSubmit
+  // 2. Handle the SUBMIT (PUT request)
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setSubmitting(true);
     setError("");
     setSuccess("");
 
-    // Get the boardCode saved during login
-    const boardCode = sessionStorage.getItem("adminBoardCode");
-    if (!boardCode) {
-      setError("Could not find admin board code. Please log in again.");
-      setLoading(false);
-      return;
-    }
-
-    const noticeData = {
-      ...formData,
-      boardCode: boardCode, // Add the boardCode to the notice
-    };
-
     try {
-      const response = await fetch("http://localhost:5000/api/notices", {
-        method: "POST",
+      const response = await fetch(`http://localhost:5000/api/notices/${id}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(noticeData),
+        body: JSON.stringify(formData), // Send the new form data
       });
 
       const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.message || "Failed to create notice");
+        throw new Error(data.message || "Failed to update notice");
       }
 
-      // Success!
-      setSuccess("Notice published successfully!");
-      // Clear the form
-      setFormData({
-        title: "",
-        category: "General",
-        content: "",
-        isPinned: false,
-        expiryDate: "",
-      });
+      setSuccess("Notice updated successfully!");
+      // After 2 seconds, go back to the manage notices page
+      setTimeout(() => {
+        navigate("/admin/notices");
+      }, 2000);
     } catch (err) {
-      console.error(err);
       setError(err.message);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
+  if (loading) {
+    return (
+      <AdminLayout>
+        <LoadingContainer>
+          <Loader size={24} />
+          <p>Loading notice data...</p>
+        </LoadingContainer>
+      </AdminLayout>
+    );
+  }
+
   return (
-    <AdminLayout activePage="create-notice">
+    <AdminLayout>
       <PageHeader>
-        <PageTitle>Create New Notice</PageTitle>
+        <PageTitle>Edit Notice</PageTitle>
       </PageHeader>
 
       <FormCard>
         <form onSubmit={handleSubmit}>
-          {/* 5. SHOW MESSAGES */}
           {error && <Message className="error">{error}</Message>}
           {success && (
             <Message className="success">
@@ -310,10 +340,8 @@ const CreateNotice = () => {
               name="title"
               value={formData.title}
               onChange={handleChange}
-              placeholder="e.g., Mid-Sem Exam Schedule"
               required
-              fontSize="1.1rem"
-              disabled={loading}
+              disabled={submitting}
             />
           </InputGroup>
 
@@ -324,7 +352,7 @@ const CreateNotice = () => {
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
-                disabled={loading}
+                disabled={submitting}
               >
                 <option value="General">General</option>
                 <option value="Exams">Exams</option>
@@ -332,16 +360,6 @@ const CreateNotice = () => {
                 <option value="Events">Events</option>
                 <option value="Holidays">Holidays</option>
               </Select>
-            </InputGroup>
-            <InputGroup>
-              <Label>Expiry Date (Optional)</Label>
-              <Input
-                type="date"
-                name="expiryDate"
-                value={formData.expiryDate}
-                onChange={handleChange}
-                disabled={loading}
-              />
             </InputGroup>
           </FormGrid>
 
@@ -351,10 +369,9 @@ const CreateNotice = () => {
               name="content"
               value={formData.content}
               onChange={handleChange}
-              placeholder="Write the full details of the notice here..."
               required
               rows="6"
-              disabled={loading}
+              disabled={submitting}
             />
           </InputGroup>
 
@@ -364,25 +381,23 @@ const CreateNotice = () => {
               name="isPinned"
               checked={formData.isPinned}
               onChange={handleChange}
-              disabled={loading}
+              disabled={submitting}
             />
-            <span style={{ fontWeight: "600", color: theme.colors.primary }}>
-              Pin this notice to the top
-            </span>
-            <span
-              style={{ fontSize: "0.85rem", color: theme.colors.textLight }}
-            >
-              (Urgent or important announcements)
-            </span>
+            {/* ... (pin styles) ... */}
+            <span>Pin this notice to the top</span>
           </CheckboxGroup>
 
           <ButtonGroup>
-            <Button type="button" disabled={loading}>
+            <Button
+              type="button"
+              onClick={() => navigate("/admin/notices")}
+              disabled={submitting}
+            >
               <X size={18} /> Cancel
             </Button>
-            <Button type="submit" $primary disabled={loading}>
+            <Button type="submit" $primary disabled={submitting}>
               <Save size={18} />
-              {loading ? "Publishing..." : "Publish Notice"}
+              {submitting ? "Saving..." : "Save Changes"}
             </Button>
           </ButtonGroup>
         </form>
@@ -391,4 +406,4 @@ const CreateNotice = () => {
   );
 };
 
-export default CreateNotice;
+export default EditNotice;
