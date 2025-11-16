@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Bell, Search, Filter } from 'lucide-react';
 import NoticeCard from '../components/NoticeCard';
 import NavBar from '../components/NavBar';

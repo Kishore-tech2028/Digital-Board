@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import AdminLayout from "../components/AdminLayout";
 import { ListCollapse, Search, Edit, Trash2 } from "lucide-react";
 import styled from "styled-components";
