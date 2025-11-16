@@ -128,7 +128,7 @@ export default function PublicNoticeBoard() {
       setError("");
       try {
         const response = await fetch(
-          `http://localhost:5000/api/board/${boardCode}/notices`
+          `http://localhost:5001/api/board/${boardCode}/notices`
         );
         if (!response.ok) {
           throw new Error("Could not fetch notices. Check the board code.");

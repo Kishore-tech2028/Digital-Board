@@ -102,6 +102,29 @@ const Content = styled.p`
     margin: 0;
 `;
 
+// --- 1. NEW COMPONENT FOR ATTACHMENTS ---
+const AttachmentWrapper = styled.div`
+  margin-top: 1.5rem;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid ${theme.colors.border};
+  background-color: ${theme.colors.bgLight};
+
+  img, video {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 450px; // Set a max height
+    object-fit: cover;
+  }
+
+  audio {
+    display: block;
+    width: 100%;
+    padding: 0.5rem;
+  }
+`;
+
 // --- SVG ICONS (moved outside component for performance) ---
 const PinIcon = ({ size = 16, fill = "currentColor" }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -116,6 +139,29 @@ const CalendarIcon = ({ size = 16, fill = "currentColor" }) => (
       <path d="M7 11h3M14 11h3M7 15h3M14 15h3" stroke={fill} strokeWidth="1.5" strokeLinecap="round" />
     </svg>
 );
+
+// --- 2. RENDER ATTACHMENT FUNCTION ---
+const renderAttachment = (notice) => {
+  if (!notice.attachmentUrl || !notice.attachmentType) {
+    return null;
+  }
+
+  const { attachmentType, attachmentUrl } = notice;
+
+  if (attachmentType.startsWith("image")) {
+    return <img src={attachmentUrl} alt={notice.title} loading="lazy" />;
+  }
+
+  if (attachmentType.startsWith("video")) {
+    return <video controls width="100%" src={attachmentUrl} />;
+  }
+
+  if (attachmentType.startsWith("audio")) {
+    return <audio controls src={attachmentUrl} />;
+  }
+
+  return null; // Fallback for unsupported types
+};
 
 // --- NOTICE CARD COMPONENT ---
 export default function NoticeCard({ notice }) {
@@ -147,7 +193,14 @@ export default function NoticeCard({ notice }) {
           {notice.category}
         </CategoryBadge>
       </Meta>
-
+      
+      {/* --- 3. ADD THE ATTACHMENT HERE --- */}
+      {notice.attachmentUrl && (
+        <AttachmentWrapper>
+          {renderAttachment(notice)}
+        </AttachmentWrapper>
+      )}
+      
       <Content>
         {notice.content}
       </Content>

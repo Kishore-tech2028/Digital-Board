@@ -5,6 +5,32 @@ const { getDb } = require('./db');
 const { ObjectId } = require('mongodb');
 const bcrypt = require('bcryptjs'); // Ensure you ran: npm install bcryptjs
 const router = express.Router();
+const multer = require('multer'); // 👈 --- 1. IMPORT MULTER
+const path = require('path'); // 👈 --- 2. IMPORT PATH
+
+/*
+const fs = require('fs'); // 👈 --- ADD THIS LINE
+
+// --- 3. DEFINE UPLOADS DIRECTORY AND ENSURE IT EXISTS ---
+const uploadsDir = path.join(__dirname, 'uploads');
+fs.mkdirSync(uploadsDir, { recursive: true }); // 👈 --- ADD THIS LINE
+*/
+
+// --- 3. CONFIGURE MULTER STORAGE ---
+// This tells multer where to save files and what to name them
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/'); // Make sure 'uploads' directory exists
+  },
+  filename: function (req, file, cb) {
+    // Create a unique filename to avoid overwrites
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+// 4. CREATE MULTER UPLOAD MIDDLEWARE
+const upload = multer({ storage: storage });
 
 // --- 1. Admin Sign Up Endpoint  ---
 router.post('/admin/signup', async (req, res) => {
@@ -111,7 +137,7 @@ router.get('/board/:boardCode/notices', async (req, res) => {
 
 
 // --- 4. Admin Endpoint to CREATE a notice ---
-router.post('/notices', async (req, res) => {
+router.post('/notices',upload.single('attachment'), async (req, res) => {
   const db = getDb();
   const collection = db.collection('notices');
 
@@ -127,11 +153,18 @@ router.post('/notices', async (req, res) => {
     title,
     content,
     category,
-    isPinned: Boolean(isPinned), // Ensure it's a boolean
+    isPinned: isPinned === 'true', // Check for the string "true"
     boardCode,
     date: new Date().toISOString() // Set the date to now
   };
 
+  // 6. Check if a file was uploaded
+  if (req.file) {
+    // req.file contains file info (path, filename, mimetype, etc.)
+    newNotice.attachmentUrl = `http://localhost:5001/uploads/${req.file.filename}`;
+    newNotice.attachmentType = req.file.mimetype;
+  }
+  
   try {
     const result = await collection.insertOne(newNotice);
     res.status(201).json({ 
@@ -196,7 +229,7 @@ router.get('/notices/:id', async (req, res) => {
 
 
 // --- 7. Admin Endpoint to UPDATE a notice ---
-router.put('/notices/:id', async (req, res) => {
+router.put('/notices/:id', upload.single('attachment'), async (req, res) => {
   const db = getDb();
   const collection = db.collection('notices');
   const noticeId = req.params.id;
@@ -217,9 +250,16 @@ router.put('/notices/:id', async (req, res) => {
     title,
     content,
     category,
-    isPinned: Boolean(isPinned),
+    isPinned: isPinned === 'true',
     // Note: We don't update boardCode or date
   };
+
+  // 8. Check if a *new* file was uploaded to replace the old one
+  if (req.file) {
+    updatedNotice.attachmentUrl = `http://localhost:5001/uploads/${req.file.filename}`;
+    updatedNotice.attachmentType = req.file.mimetype;
+    // (Again, you could add logic here to delete the *old* file)
+  }
 
   try {
     const result = await collection.updateOne(
@@ -237,6 +277,7 @@ router.put('/notices/:id', async (req, res) => {
     res.status(500).json({ message: 'Server error updating notice' });
   }
 });
+
 // --- 8. NEW Admin Endpoint to GET Dashboard Stats ---
 router.get('/admin/stats/:boardCode', async (req, res) => {
   const db = getDb();

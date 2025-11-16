@@ -121,7 +121,7 @@ function ManageNotices() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/board/${boardCode}/notices`
+        `http://localhost:5001/api/board/${boardCode}/notices`
       );
       if (!response.ok) {
         throw new Error("Failed to fetch notices");
@@ -152,7 +152,7 @@ function ManageNotices() {
     try {
       // We can now safely access `noticeToDelete._id`
       const response = await fetch(
-        `http://localhost:5000/api/notices/${noticeToDelete._id}`,
+        `http://localhost:5001/api/notices/${noticeToDelete._id}`,
         {
           method: "DELETE",
         }
@@ -231,7 +231,7 @@ function ManageNotices() {
               !error &&
               filteredNotices.map((notice) => (
                 <tr key={notice._id}>
-                  {" "}
+                  {""}
                   {/* 5. FIX: Cleaned up key */}
                   <Td style={{ fontWeight: "600" }}>{notice.title}</Td>
                   <Td>

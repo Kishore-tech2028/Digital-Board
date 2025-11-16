@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "../components/AdminLayout";
-import { Save, X, CheckCircle, Loader } from "lucide-react";
+import { Save, X, CheckCircle, Loader, Paperclip } from "lucide-react"; // 1. IMPORT Paperclip
 import styled from "styled-components";
 import theme from "../theme";
 
@@ -221,6 +221,43 @@ const LoadingContainer = styled.div`
   gap: 1rem;
 `;
 
+// --- 2. ADD STYLES FOR FILE INPUT (copied from CreateNotice) ---
+const FileInputGroup = styled.div`
+  border: 2px dashed ${theme.colors.border};
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  background-color: ${theme.colors.bgLight}80;
+`;
+
+const FileInputLabel = styled.label`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  background-color: ${theme.colors.white};
+  color: ${theme.colors.primary};
+  border: 1px solid ${theme.colors.border};
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  &:hover {
+    background-color: ${theme.colors.bgLight};
+  }
+`;
+
+const FileInput = styled.input`
+  display: none;
+`;
+
+const FileName = styled.p`
+  font-weight: 500;
+  color: ${theme.colors.textMain};
+  margin-top: 0.75rem;
+`;
+// --- END OF NEW STYLES ---
+
 // --- EDIT NOTICE COMPONENT ---
 const EditNotice = () => {
   const { id } = useParams(); // Get the notice ID from the URL
@@ -232,11 +269,15 @@ const EditNotice = () => {
     content: "",
     isPinned: false,
   });
-
+  
+  // 3. ADD STATES FOR FILE HANDLING
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [existingAttachment, setExistingAttachment] = useState(null); // To show what's already there
   const [loading, setLoading] = useState(true); // Start true to fetch data
   const [submitting, setSubmitting] = useState(false); // For submit button
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  
 
   // 1. Fetch the notice data on component load
   useEffect(() => {
@@ -244,7 +285,7 @@ const EditNotice = () => {
       setLoading(true);
       setError("");
       try {
-        const response = await fetch(`http://localhost:5000/api/notices/${id}`);
+        const response = await fetch(`http://localhost:5001/api/notices/${id}`);
         if (!response.ok) {
           throw new Error("Could not fetch notice data.");
         }
@@ -254,8 +295,13 @@ const EditNotice = () => {
           title: data.title,
           category: data.category,
           content: data.content,
-          isPinned: data.isPinned,
+          isPinned: Boolean(data.isPinned), // 👈 --- 1. THE FIX: Force to boolean
         });
+
+        // 4. SET THE EXISTING ATTACHMENT
+        if (data.attachmentUrl) {
+          setExistingAttachment(data.attachmentUrl);
+        }
       } catch (err) {
         setError(err.message);
       } finally {
@@ -273,21 +319,41 @@ const EditNotice = () => {
       e.target.type === "checkbox" ? e.target.checked : e.target.value;
     setFormData({ ...formData, [e.target.name]: value });
   };
+  // 5. ADD HANDLER FOR FILE INPUT
+  const handleFileChange = (e) => {
+    setError("");
+    setSuccess("");
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+      setExistingAttachment(null); // Hide old attachment preview if new one is selected
+    }
+  };
 
-  // 2. Handle the SUBMIT (PUT request)
+
+  // 6. Handle the SUBMIT (PUT request with FormData)
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     setError("");
     setSuccess("");
 
+    // 7. MUST USE FORMDATA TO SEND FILES
+    const updateData = new FormData();
+    updateData.append("title", formData.title);
+    updateData.append("content", formData.content);
+    updateData.append("category", formData.category);
+    updateData.append("isPinned", formData.isPinned);
+
+    // Only append a new file if one was selected
+    if (selectedFile) {
+      updateData.append("attachment", selectedFile);
+    }
+
     try {
-      const response = await fetch(`http://localhost:5000/api/notices/${id}`, {
+      const response = await fetch(`http://localhost:5001/api/notices/${id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData), // Send the new form data
+        // DO NOT set 'Content-Type': 'application/json'
+        body: updateData, // Send the FormData
       });
 
       const data = await response.json();
@@ -375,18 +441,54 @@ const EditNotice = () => {
             />
           </InputGroup>
 
+          {/* --- 8. ADD THE FILE INPUT UI --- */}
+          <InputGroup mb="1.5rem">
+            <Label>Attachment (Optional)</Label>
+            <FileInputGroup>
+              <FileInputLabel htmlFor="file-upload">
+                <Paperclip size={18} />
+                {selectedFile ? "Change file..." : "Choose new file..."}
+              </FileInputLabel>
+              <FileInput
+                id="file-upload"
+                type="file"
+                accept="image/*,video/*,audio/*"
+                onChange={handleFileChange}
+                disabled={submitting}
+              />
+              {/* Show selected file OR existing file */}
+              {selectedFile && (
+                <FileName>Selected: {selectedFile.name}</FileName>
+              )}
+              {existingAttachment && (
+                 <FileName>
+                  Current: <a href={existingAttachment} target="_blank" rel="noopener noreferrer">View existing attachment</a>
+                 </FileName>
+              )}
+            </FileInputGroup>
+          </InputGroup>
+          {/* --- END OF FILE INPUT --- */}
+          
           <CheckboxGroup>
             <CheckboxInput
               type="checkbox"
               name="isPinned"
-              checked={formData.isPinned}
+              checked={Boolean(formData.isPinned)}
               onChange={handleChange}
               disabled={submitting}
             />
-            {/* ... (pin styles) ... */}
-            <span>Pin this notice to the top</span>
+            {/* 1. THESE SPANS WERE MISSING */}
+            <span style={{ fontWeight: "600", color: theme.colors.primary }}>
+              Pin this notice to the top
+            </span>
+            <span
+              style={{ fontSize: "0.85rem", color: theme.colors.textLight }}
+            >
+              (Urgent or important announcements)
+            </span>
           </CheckboxGroup>
 
+          {/* 2. THE BUTTON GROUP WAS OUTSIDE THE CHECKBOX GROUP */}
           <ButtonGroup>
             <Button
               type="button"

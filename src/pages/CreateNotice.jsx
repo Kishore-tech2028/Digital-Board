@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import AdminLayout from "../components/AdminLayout";
-import { Save, X, CheckCircle } from "lucide-react"; // 1. Add CheckCircle
+import { Save, X, CheckCircle, Paperclip } from "lucide-react"; // 1. Add CheckCircle, Paperclip
 import styled from "styled-components";
 import theme from "../theme";
 
@@ -212,6 +212,45 @@ const Message = styled.p`
   }
 `;
 
+// --- NEW: STYLES FOR FILE INPUT ---
+const FileInputGroup = styled.div`
+  border: 2px dashed ${theme.colors.border};
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  background-color: ${theme.colors.bgLight}80; // 50% opacity
+`;
+
+const FileInputLabel = styled.label`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  background-color: ${theme.colors.white};
+  color: ${theme.colors.primary};
+  border: 1px solid ${theme.colors.border};
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: ${theme.colors.bgLight};
+  }
+`;
+
+const FileInput = styled.input`
+  display: none; // The actual input is hidden
+`;
+
+const FileName = styled.p`
+  font-weight: 500;
+  color: ${theme.colors.textMain};
+  margin-top: 0.75rem;
+`;
+// --- END OF NEW STYLES ---
+
 const CreateNotice = () => {
   const [formData, setFormData] = useState({
     title: "",
@@ -221,7 +260,9 @@ const CreateNotice = () => {
     expiryDate: "", // Note: our backend doesn't use this yet, but that's okay
   });
 
+  
   // 3. ADD STATES FOR API CALLS
+  const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -234,6 +275,15 @@ const CreateNotice = () => {
     setFormData({ ...formData, [e.target.name]: value });
   };
 
+  // 3. ADD HANDLER FOR FILE INPUT
+  const handleFileChange = (e) => {
+    setError("");
+    setSuccess("");
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+  
   // 4. REPLACE handleSubmit
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -249,18 +299,26 @@ const CreateNotice = () => {
       return;
     }
 
-    const noticeData = {
-      ...formData,
-      boardCode: boardCode, // Add the boardCode to the notice
-    };
-
+    // 4. MUST USE FORMDATA TO SEND FILES
+    const postData = new FormData();
+    postData.append("title", formData.title);
+    postData.append("content", formData.content);
+    postData.append("category", formData.category);
+    postData.append("isPinned", formData.isPinned);
+    postData.append("boardCode", boardCode);
+    
+    // Add file only if one is selected
+    if (selectedFile) {
+      postData.append("attachment", selectedFile);
+    }
+    // Note: We don't send expiryDate as backend doesn't use it
     try {
-      const response = await fetch("http://localhost:5000/api/notices", {
+      // 5. SUBMIT THE FORMDATA
+      const response = await fetch("http://localhost:5001/api/notices", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(noticeData),
+        // DO NOT set 'Content-Type': 'application/json'
+        // Browser will auto-set it to 'multipart/form-data'
+        body: postData,
       });
 
       const data = await response.json();
@@ -279,6 +337,8 @@ const CreateNotice = () => {
         isPinned: false,
         expiryDate: "",
       });
+      setSelectedFile(null); // Clear the file
+
     } catch (err) {
       console.error(err);
       setError(err.message);
@@ -357,6 +417,28 @@ const CreateNotice = () => {
               disabled={loading}
             />
           </InputGroup>
+          
+          {/* --- 6. ADD THE FILE INPUT UI --- */}
+          <InputGroup mb="1.5rem">
+            <Label>Attachment (Optional)</Label>
+            <FileInputGroup>
+              <FileInputLabel htmlFor="file-upload">
+                <Paperclip size={18} />
+                {selectedFile ? "Change file..." : "Choose a file..."}
+              </FileInputLabel>
+              <FileInput
+                id="file-upload"
+                type="file"
+                accept="image/*,video/*,audio/*"
+                onChange={handleFileChange}
+                disabled={loading}
+              />
+              {selectedFile && (
+                <FileName>Selected: {selectedFile.name}</FileName>
+              )}
+            </FileInputGroup>
+          </InputGroup>
+          {/* --- END OF FILE INPUT --- */}
 
           <CheckboxGroup>
             <CheckboxInput

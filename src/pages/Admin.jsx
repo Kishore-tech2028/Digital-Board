@@ -142,7 +142,7 @@ export default function Admin() {
         const fetchStats = async () => {
             setLoading(true);
             try {
-                const response = await fetch(`http://localhost:5000/api/admin/stats/${boardCode}`);
+                const response = await fetch(`http://localhost:5001/api/admin/stats/${boardCode}`);
                 if (!response.ok) {
                     throw new Error('Could not fetch stats');
                 }
