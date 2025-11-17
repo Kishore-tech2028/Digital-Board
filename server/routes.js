@@ -280,7 +280,7 @@ router.get('/admin/stats/:boardCode', async (req, res) => {
   }
 
   try {
-    // Use an aggregation pipeline to calculate all stats at once
+    // Using an aggregation pipeline to calculate all stats at once
     const stats = await collection.aggregate([
       { $match: { boardCode: boardCode } },
       {
