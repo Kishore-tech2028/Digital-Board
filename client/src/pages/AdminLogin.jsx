@@ -3,7 +3,7 @@ import { Lock, Mail, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Nav from '../components/NavBar.jsx';
 import styled from 'styled-components';
-import theme from '../theme';
+import theme from '../theme.js';
 
 // --- STYLED COMPONENTS (from your file) ---
 const Container = styled.div` 

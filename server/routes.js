@@ -3,21 +3,12 @@
 const express = require('express');
 const { getDb } = require('./db');
 const { ObjectId } = require('mongodb');
-const bcrypt = require('bcryptjs'); // Ensure you ran: npm install bcryptjs
+const bcrypt = require('bcryptjs'); 
 const router = express.Router();
-const multer = require('multer'); // 👈 --- 1. IMPORT MULTER
-const path = require('path'); // 👈 --- 2. IMPORT PATH
-
-/*
-const fs = require('fs'); // 👈 --- ADD THIS LINE
-
-// --- 3. DEFINE UPLOADS DIRECTORY AND ENSURE IT EXISTS ---
-const uploadsDir = path.join(__dirname, 'uploads');
-fs.mkdirSync(uploadsDir, { recursive: true }); // 👈 --- ADD THIS LINE
-*/
+const multer = require('multer');
+const path = require('path'); 
 
 // --- 3. CONFIGURE MULTER STORAGE ---
-// This tells multer where to save files and what to name them
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/'); // Make sure 'uploads' directory exists

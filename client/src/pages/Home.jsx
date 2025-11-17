@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from "styled-components";
-import theme from "../theme";
+import theme from "../theme.js";
 import NavBar from "../components/NavBar.jsx";
 
 // --- New Styled Components ---

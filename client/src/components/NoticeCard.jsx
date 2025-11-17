@@ -1,6 +1,7 @@
 import React from 'react';
 import styled, { css } from 'styled-components';
 import theme from "../theme";
+import pin_image from "../assets/pinned.png"
 
 // --- STYLED COMPONENTS ---
 
@@ -127,9 +128,8 @@ const AttachmentWrapper = styled.div`
 
 // --- SVG ICONS (moved outside component for performance) ---
 const PinIcon = ({ size = 16, fill = "currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M14.8 2.2c-1.1-.6-2.5-.2-3.2.9L6.3 11.7a2 2 0 00.4 2.5l5.6 4.7a1 1 0 001.3-1.4l-1.5-3.1 3.2-3.2 2.1 2.1a1 1 0 001.4-1.4L17.9 6.6c-.6-.8-.3-1.9.5-2.5l.4-.3a1 1 0 00-.4-1.8l-3.6-.8z" fill={fill} />
-    </svg>
+    <img width={size} height={size} src={pin_image}>
+    </img>
 );
 
 const CalendarIcon = ({ size = 16, fill = "currentColor" }) => (
@@ -200,7 +200,7 @@ export default function NoticeCard({ notice }) {
           {renderAttachment(notice)}
         </AttachmentWrapper>
       )}
-      
+
       <Content>
         {notice.content}
       </Content>
